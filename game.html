@@ -1,0 +1,118 @@
+<html>
+
+
+	<b>Some text here</b>
+
+<canvas id = "gameCanvas" width = "800" height = "600"></canvas>
+
+<script>
+var canvas;
+var canvasContext;
+var ballX = 50;
+var ballY = 50;
+var ballSpeedX = 10;
+var ballSpeedY = 4;
+
+var paddle1Y =250;
+const PADDLE_HEIGHT = 100;
+
+//catch the mouse position 
+function calculateMousePos(evt){
+	var rect = canvas.getBoundingClientRect();
+	var root = document.documentElement;
+	var mouseX  = evt.clientX - rect.left - root.scrollLeft;
+	var mouseY  = evt.clientY - rect.top - root.scrollTop;
+	return {
+		x: mouseX,
+		y: mouseY
+	}
+}
+
+window.onload = function()
+{
+	//console.log("hello World!");
+	canvas = document.getElementById('gameCanvas');
+	canvasContext = canvas.getContext('2d');
+
+	//By changing the framesPersecond, 
+	//it will increase the moving speed
+	var framesPerSecond = 30;
+	setInterval(function(){
+		 moveEverything();
+		 drawEverything();}, 1000/framesPerSecond);
+	//the function drawEverthing call every sec
+	// when the function call  the ballx increse by 20
+
+	canvas.addEventListener('mousemove',
+				function(evt){
+					var mousePos = calculateMousePos(evt);
+					paddle1Y = mousePos.y - (PADDLE_HEIGHT/2);
+				});
+}
+
+function moveEverything(){
+	//ballX = ballX + 5;// the ball moving rate
+	ballX = ballX + ballSpeedX;
+	ballY = ballY + ballSpeedY;
+	//ballSpeedX = ballSpeedX + 1; // ball increase in accurity 
+
+	//ball touch the canvas wall in player side, and it will turn back
+	if(ballX < 0 ) {
+		ballSpeedX = -ballSpeedX;
+	} 
+	//ball touch the canvas wall, and it will turn back
+	if(ballX > canvas.width ) {
+		ballSpeedX = -ballSpeedX;
+	} 
+
+		
+	if(ballY < 0 ) {
+		ballSpeedY = -ballSpeedY;
+	} 
+	if(ballY > canvas.height ) {
+		ballSpeedY = -ballSpeedY;
+	} 
+}
+function drawEverything(){
+
+	//console.log(ballX)
+	//canvasContext.fillStyle ='black'; //drawing a black box
+	//canvasContext.fillRect(0,0,canvas.width,canvas.height);
+	//canvasContext.fillStyle = 'white';//drawing a white box
+	//canvasContext.fillRect(0,210,10,100);	
+	//canvasContext.fillStyle = 'red';
+	//canvasContext.fillRect(ballX,100,10,10);
+	//canvasContext.fillRect(ballX,200,50,25);
+	//canvasContext.fillRect(ballX,ballX,ballX,ballX);
+	//canvasContext.fillRect(ballX,ballX,50,25);
+	//The order of code is matter in JS Coding
+	colorRect(0, 0, canvas.width, canvas.height, 'black');
+	// represent the left player
+	colorRect(0, paddle1Y, 10, 100, 'white');
+	// the ball 
+	//colorRect(ballX,100, 10, 10, 'red');
+
+	//Draw the red ball path with a radians function
+	//ball move in a drawn arc
+	//canvasContext.fillStyle = 'red';
+	//canvasContext.beginPath();
+	//canvasContext.arc(ballX, 50, 10, 0, Math.PI*2,true);
+	//canvasContext.fill();
+	colorCircle(ballX,ballY,10,'yellow');
+
+}
+
+// Drawing the shape of the ball 
+function colorCircle(centerX, centerY, radius, drawColor){
+	canvasContext.fillStyle = drawColor;
+	canvasContext.beginPath();
+	canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2,true);
+	canvasContext.fill();
+}
+// function help to fill the color of the any shape
+function colorRect(leftX, topY, width, height, drawColor){
+	canvasContext.fillStyle = drawColor;
+	canvasContext.fillRect(leftX, topY, width, height);
+}
+</script>
+</html>
