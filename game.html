@@ -1,7 +1,7 @@
 <html>
 
 
-	<b>Some text here</b>
+	<b>The Tennies Game!!!!!!</b>
 
 <canvas id = "gameCanvas" width = "800" height = "600"></canvas>
 
@@ -13,8 +13,16 @@ var ballY = 50;
 var ballSpeedX = 10;
 var ballSpeedY = 4;
 
+var play1 = 0;
+var play2 = 0;
 var paddle1Y =250;
+var paddle2Y =250;
 const PADDLE_HEIGHT = 100;
+const PADDLE_THICKNESS = 10;
+
+
+const winningscore = 10;
+var showingPlayerWIn = false;
 
 //catch the mouse position 
 function calculateMousePos(evt){
@@ -28,21 +36,31 @@ function calculateMousePos(evt){
 	}
 }
 
+
+function handleMouseClick(evt){
+	if(showingPlayerWIn){
+		play1 = 0;
+		play2 = 0;
+		showingPlayerWIn = false;
+	}
+
+}
 window.onload = function()
 {
 	//console.log("hello World!");
 	canvas = document.getElementById('gameCanvas');
 	canvasContext = canvas.getContext('2d');
 
+	canvas.addEventListener('mousedown',handleMouseClick);
 	//By changing the framesPersecond, 
 	//it will increase the moving speed
-	var framesPerSecond = 30;
+	var framesPerSecond = 40;
 	setInterval(function(){
 		 moveEverything();
 		 drawEverything();}, 1000/framesPerSecond);
 	//the function drawEverthing call every sec
 	// when the function call  the ballx increse by 20
-
+	
 	canvas.addEventListener('mousemove',
 				function(evt){
 					var mousePos = calculateMousePos(evt);
@@ -50,7 +68,35 @@ window.onload = function()
 				});
 }
 
+// the ball reset when it touch the left wall
+function ballReset(){
+    if(play1 >= winningscore || play2 >= winningscore){
+		//play1 = 0;
+		//play2 = 0;
+		showingPlayerWIn = true;
+	}
+
+	ballSpeedX = -ballSpeedX;
+	ballX = canvas.width/2;
+	ballY = canvas.height/2;
+}
+
+//the paddle 2 AI movement
+function computerMovement(){
+	var paddle2YCenter = paddle2Y + (PADDLE_HEIGHT/2);
+	if(paddle2YCenter < ballY){
+			paddle2Y +=  3;
+	}else{
+		paddle2Y -= 3;
+	}
+}
 function moveEverything(){
+
+	if(showingPlayerWIn == true){
+		return;
+	}
+
+	computerMovement();
 	//ballX = ballX + 5;// the ball moving rate
 	ballX = ballX + ballSpeedX;
 	ballY = ballY + ballSpeedY;
@@ -58,11 +104,29 @@ function moveEverything(){
 
 	//ball touch the canvas wall in player side, and it will turn back
 	if(ballX < 0 ) {
-		ballSpeedX = -ballSpeedX;
+		//ballSpeedX = -ballSpeedX;
+		if(ballY > paddle1Y && ballY < paddle1Y + PADDLE_HEIGHT){
+			ballSpeedX = -ballSpeedX;
+			var deltaY = ballY -(paddle1Y + PADDLE_HEIGHT/2);
+			ballSpeedY = deltaY*0.35;
+		}else{
+			play2++; // score increment before reset 
+			ballReset();
+		}
 	} 
 	//ball touch the canvas wall, and it will turn back
 	if(ballX > canvas.width ) {
-		ballSpeedX = -ballSpeedX;
+		//ballSpeedX = -ballSpeedX;
+		if(ballY > paddle2Y && ballY < paddle2Y + PADDLE_HEIGHT){
+			ballSpeedX = -ballSpeedX;
+			ballSpeedX = -ballSpeedX;
+			var deltaY = ballY -(paddle2Y + PADDLE_HEIGHT/2);
+			ballSpeedY = deltaY*0.35;
+		}else{
+			play1++;
+			ballReset();
+	
+		}
 	} 
 
 		
@@ -72,6 +136,13 @@ function moveEverything(){
 	if(ballY > canvas.height ) {
 		ballSpeedY = -ballSpeedY;
 	} 
+}
+
+
+function drawNet(){
+	for(var i = 0; i < canvas.height; i+=40){
+		colorRect(canvas.width/2-1,i,2,20,'white');
+	}
 }
 function drawEverything(){
 
@@ -87,8 +158,28 @@ function drawEverything(){
 	//canvasContext.fillRect(ballX,ballX,50,25);
 	//The order of code is matter in JS Coding
 	colorRect(0, 0, canvas.width, canvas.height, 'black');
+
+
+	if(showingPlayerWIn)
+	{	
+
+		canvasContext.fillStyle ='yellow';
+		if(play1 >= winningscore)
+		{
+			canvasContext.fillText("Player1 won" ,350,200);
+		}else if (play2 >= winningscore){
+			canvasContext.fillText("Player2 won" ,350,200);
+		}
+		canvasContext.fillText("Click to continue!!!" ,350,500);
+		return;
+	}
+
+	drawNet();
 	// represent the left player
-	colorRect(0, paddle1Y, 10, 100, 'white');
+	colorRect(5, paddle1Y, PADDLE_THICKNESS, PADDLE_HEIGHT, 'white');
+
+	// represent the right player
+	colorRect(canvas.width-15, paddle2Y, PADDLE_THICKNESS, PADDLE_HEIGHT, 'white');
 	// the ball 
 	//colorRect(ballX,100, 10, 10, 'red');
 
@@ -100,8 +191,11 @@ function drawEverything(){
 	//canvasContext.fill();
 	colorCircle(ballX,ballY,10,'yellow');
 
-}
 
+	canvasContext.fillText(play1 ,100,100)
+	canvasContext.fillText(play2 ,canvas.width - 100,100)
+
+}
 // Drawing the shape of the ball 
 function colorCircle(centerX, centerY, radius, drawColor){
 	canvasContext.fillStyle = drawColor;
